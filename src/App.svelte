@@ -19,7 +19,8 @@
       >
       <Input
         class="text-lg"
-        type="number"
+        type="text"
+        inputmode="decimal"
         id="minutesOnKilometer"
         value={$minutesOnKilometerView$}
         on:input={onChangeMinutesOnKilometer}
@@ -31,7 +32,8 @@
       >
       <Input
         class="text-lg"
-        type="number"
+        type="text"
+        inputmode="decimal"
         id="kilometersPerHour"
         value={$kilometersPerHourView$}
         on:input={onChangeKilometersPerHour}
