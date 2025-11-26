@@ -66,13 +66,20 @@ sample({
   target: changeKilometersPerHour,
 });
 
-// Эффект для автозамены точки/запятой на апостроф в поле ввода
+// Эффект для автозамены точки/запятой на апостроф и ограничения ввода
 const replaceInputSeparatorFx = createEffect((input) => {
   const cursorPos = input.selectionStart;
-  const newValue = input.value.replace(/[.,]/g, "'");
+  let newValue = input.value.replace(/[.,]/g, "'");
+  
+  // Ограничиваем: после ' только 2 цифры максимум
+  const match = newValue.match(/^(\d*'?\d{0,2})/);
+  if (match) {
+    newValue = match[1];
+  }
+  
   if (newValue !== input.value) {
     input.value = newValue;
-    input.setSelectionRange(cursorPos, cursorPos);
+    input.setSelectionRange(Math.min(cursorPos, newValue.length), Math.min(cursorPos, newValue.length));
   }
 });
 
@@ -83,11 +90,8 @@ sample({
 });
 
 sample({
-  clock: onChangeMinutesOnKilometer,
-  fn: (e) => parseMinutesOnKilometer(e.target.value.replace(/[.,]/g, "'")),
-  filter: (e) => {
-    const newValue = e.target.value.replace(/[.,]/g, "'");
-    return parseMinutesOnKilometer(newValue) !== null;
-  },
+  clock: replaceInputSeparatorFx.done,
+  fn: ({ params: input }) => parseMinutesOnKilometer(input.value),
+  filter: ({ params: input }) => parseMinutesOnKilometer(input.value) !== null,
   target: changeMinutesOnKilometer,
 });
