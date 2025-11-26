@@ -1,4 +1,4 @@
-import { combine, createEvent, sample } from "effector";
+import { combine, createEffect, createEvent, sample } from "effector";
 
 import {
   minutesOnKilometer$,
@@ -66,19 +66,25 @@ sample({
   target: changeKilometersPerHour,
 });
 
+// Эффект для автозамены точки/запятой на апостроф в поле ввода
+const replaceInputSeparatorFx = createEffect((input) => {
+  const cursorPos = input.selectionStart;
+  const newValue = input.value.replace(/[.,]/g, "'");
+  if (newValue !== input.value) {
+    input.value = newValue;
+    input.setSelectionRange(cursorPos, cursorPos);
+  }
+});
+
 sample({
   clock: onChangeMinutesOnKilometer,
-  fn: (e) => {
-    // Автозамена точки/запятой на апостроф при вводе
-    const input = e.target;
-    const cursorPos = input.selectionStart;
-    const newValue = input.value.replace(/[.,]/g, "'");
-    if (newValue !== input.value) {
-      input.value = newValue;
-      input.setSelectionRange(cursorPos, cursorPos);
-    }
-    return parseMinutesOnKilometer(newValue);
-  },
+  fn: (e) => e.target,
+  target: replaceInputSeparatorFx,
+});
+
+sample({
+  clock: onChangeMinutesOnKilometer,
+  fn: (e) => parseMinutesOnKilometer(e.target.value.replace(/[.,]/g, "'")),
   filter: (e) => {
     const newValue = e.target.value.replace(/[.,]/g, "'");
     return parseMinutesOnKilometer(newValue) !== null;
